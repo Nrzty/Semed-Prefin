@@ -5,7 +5,9 @@
                 <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </button>
-        <h1 class="text-lg font-semibold text-gray-700 ml-4">Dashboard</h1>
+        @if ($nomeEscola)
+            <h1 class="text-lg font-semibold text-gray-700 ml-4"> {{ $nomeEscola }}</h1>
+        @endif
     </div>
 
     <div class="flex items-center space-x-4">

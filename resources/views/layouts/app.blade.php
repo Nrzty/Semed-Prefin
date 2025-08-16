@@ -13,20 +13,20 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased">
-<div x-data="{ sidebarOpen: true }" class="flex h-screen bg-gray-100">
+    <div x-data="{ sidebarOpen: true }" class="flex h-screen bg-gray-100">
 
-    @include('layouts.partials.sidebar')
+        @include('layouts.partials.sidebar')
 
-    <div class="flex flex-col flex-1 overflow-y-auto">
+        <div class="flex flex-col flex-1 h-screen">
 
-        @include('layouts.partials.header')
+            @include('layouts.partials.header')
 
-        <main class="flex-1 p-6 md:p-8">
-            {{ $slot }}
-        </main>
+            <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+                {{ $slot }}
+            </main>
 
-        @include('layouts.partials.footer')
+            @include('layouts.partials.footer')
+        </div>
     </div>
-</div>
 </body>
 </html>

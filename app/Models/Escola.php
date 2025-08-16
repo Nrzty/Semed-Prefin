@@ -6,5 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Escola extends Model
 {
+    public function users(){
+        return $this->hasMany(User::class);
+    }
 
+    public function repasses(){
+        return $this->hasMany(Repasse::class);
+    }
 }
