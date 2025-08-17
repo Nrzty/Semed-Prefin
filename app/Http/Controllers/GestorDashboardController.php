@@ -26,7 +26,7 @@ class GestorDashboardController extends Controller
 
         $repasseAtivo = $escola->repasses->sortByDesc('ano_exercicio')
                                           ->sortByDesc('numero_parcela')
-                                          ->first();
+                                          ->first();                                          
 
         $saldoCusteio = 0;
         $saldoCapital = 0;
@@ -35,20 +35,13 @@ class GestorDashboardController extends Controller
 
         if ($repasseAtivo) {
             
-            $totalGastoCapital = $repasseAtivo->pagamentos->where('tipo_despesa', 'Material Permanente')
-                                                          ->sum('valor_total_pagamento');
+            $totalGastoCusteio = $repasseAtivo->totalGastoCusteio();
+            $totalGastoCapital = $repasseAtivo->totalGastoCapital();
 
-            $totalGastoCusteio = $repasseAtivo->pagamentos->where('tipo_despesa', 'Material de Custeio')
-                                                          ->sum('valor_total_pagamento');
-        
-            $totalGastoServicos = $repasseAtivo->pagamentos->where('tipo_despesa', 'Prestacao de Serviço')
-                                                           ->sum('valor_total_pagamento');
-
-            $saldoCusteio = $repasseAtivo->valor_custeio - ($totalGastoCusteio + $totalGastoServicos);
-
-            $saldoDeCapital = $repasseAtivo->valor_capital -$totalGastoCapital;
-
-            $ultimosPagamentos = $repasseAtivo->pagamentos->sortByDesc('data_pagamento')->take(5);
+            $saldoCusteio = $repasseAtivo->valor_custeio - $totalGastoCusteio;
+            $saldoCapital = $repasseAtivo->valor_capital - $totalGastoCapital;
+            
+            $ultimosPagamentos = $repasseAtivo->pagamentos->sortByDesc('data_pagamento_efetivo')->take(5); 
         }
 
         return view('gestor.dashboard', compact([
@@ -56,7 +49,7 @@ class GestorDashboardController extends Controller
             'repasseAtivo',
             'saldoCusteio',
             'saldoCapital',
-            'ultimosPagamentos'
+            'ultimosPagamentos',
         ]));
     }
 }

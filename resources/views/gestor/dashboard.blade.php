@@ -14,25 +14,27 @@
                             <span class="block sm:inline">{{ session('status') }}</span>
                         </div>
                     @endif
-                    <h3 class="text-lg font-medium">Escola: {{ $escola->nome_escola }}</h3>                
+                    <h3 class="text-lg font-medium">Repasse Ativo: {{ $repasseAtivo->numero_parcela }}ª Parcela de {{ $repasseAtivo->ano_exercicio }}</h3>                
                     @if ($repasseAtivo)  
-                    <p class="mt-1">
-                            Repasse Ativo: {{ $repasseAtivo->numero_parcela }}ª Parcela de {{ $repasseAtivo->ano_exercicio }}
-                        </p>
-
+                            <div class="bg-purple-100 p-4 rounded-lg">
+                                <h4 class="font-bold text-purple-800">Total da {{ $repasseAtivo->numero_parcela }}ª Parcela </h4>
+                                <p class="text-2xl font-semibold text-purple-900">
+                                    R$ {{ number_format($repasseAtivo->valor_custeio + $repasseAtivo->valor_capital, 2, ',', '.') }}
+                                </p>
+                            </div>
                         <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                             {{-- Card Saldo Custeio --}}
                             <div class="bg-blue-100 p-4 rounded-lg">
                                 <h4 class="font-bold text-blue-800">Saldo de Custeio</h4>
                                 <p class="text-2xl font-semibold text-blue-900">
-                                    R$ {{ number_format($saldoCusteio, 2, ',', '.') }}
+                                    R$ {{ number_format($repasseAtivo->valor_custeio, 2, ',', '.') }}
                                 </p>
                             </div>
 
                             <div class="bg-green-100 p-4 rounded-lg">
                                 <h4 class="font-bold text-green-800">Saldo de Capital</h4>
                                 <p class="text-2xl font-semibold text-green-900">
-                                    R$ {{ number_format($saldoCapital, 2, ',', '.') }}
+                                    R$ {{ number_format($repasseAtivo->valor_capital, 2, ',', '.') }}
                                 </p>
                             </div>
                         </div>
@@ -68,7 +70,6 @@
                                 </table>
                             </div>
                         </div>
-
                     @else
                         <div class="bg-yellow-100 p-4 rounded-lg text-yellow-800">
                             Nenhum repasse com status "Aberto" foi encontrado para esta escola.

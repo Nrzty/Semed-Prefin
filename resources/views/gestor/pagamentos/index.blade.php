@@ -41,7 +41,6 @@
                                         <a href="{{ route('gestor.pagamentos.edit', $pagamento->id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
                                             Editar
                                         </a>
-                                        {{-- BOTÃO DE EXCLUIR --}}
                                         <button @click="openModal = true; deleteUrl = '{{ route('gestor.pagamentos.destroy', $pagamento->id) }}'" class="text-red-600 hover:text-red-900 text-sm font-medium">
                                             Excluir
                                         </button>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Gestor\DocumentoController;
 use App\Http\Controllers\Gestor\PagamentoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RedirectAuthenticatedUsersController;
@@ -19,6 +20,10 @@ Route::middleware(['auth'])->prefix('gestor')->name('gestor.')->group(function (
     Route::get('/dashboard', [GestorDashboardController::class,'index'])->name('dashboard');
 
     Route::resource('pagamentos', PagamentoController::class);
+
+    // ROTA PRA GERAR OS DOCUMENTOS
+    Route::get('documentos', [DocumentoController::class, 'index'])->name('documentos.index');
+    Route::get('repasses/{repasse}/demonstrativo', [DocumentoController::class, 'gerarDemonstrativo'])->name('repasses.demonstrativo');
 });
 
 // ROTAS DO ADMINISTRADOR

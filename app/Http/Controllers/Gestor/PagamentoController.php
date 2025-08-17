@@ -43,8 +43,8 @@ class PagamentoController extends Controller
             'numero_nota_fiscal' => 'required|string|max:50',
             'data_emissao_documento' => 'required|date',
             'data_pagamento_efetivo' => 'required|date',
-            'numero_cheque' => 'nullable|string|max:50',
-            'data_vencimento_cheque' => 'nullable|date',
+            'numero_cheque' => 'required|string|max:50',
+            'data_vencimento_cheque' => 'required|date|after_or_equal:data_emissao_documento',
             'valor_total_pagamento' => 'required|numeric|min:0.01',
         ]);
 
@@ -54,6 +54,24 @@ class PagamentoController extends Controller
 
         if (!$repasseAtivo){
             return redirect()->back()->withErrors(['geral' => 'Não há um repasse ativo para lançar este pagamento.']);
+        }
+
+        $novoValor = (float) $validatedData['valor_total_pagamento'];
+        $tipoDespesa = $validatedData['tipo_despesa'];
+
+        if (in_array($tipoDespesa, ['Material de Custeio', 'Prestação de Serviço'])) {
+            $saldoDisponivel = $repasseAtivo->valor_custeio - $repasseAtivo->totalGastoCusteio();
+        
+            if ($novoValor > $saldoDisponivel) {
+                return redirect()->back()->withErrors(['valor_total_pagamento' => 'O valor do pagamento excede o saldo de Custeio disponível (R$ ' . number_format($saldoDisponivel, 2, ',', '.') . ').'])->withInput();
+            }
+        
+        } else { // Material de Capital
+            $saldoDisponivel = $repasseAtivo->valor_capital - $repasseAtivo->totalGastoCapital();
+        
+            if ($novoValor > $saldoDisponivel) {
+                return redirect()->back()->withErrors(['valor_total_pagamento' => 'O valor do pagamento excede o saldo de Capital disponível (R$ ' . number_format($saldoDisponivel, 2, ',', '.') . ').'])->withInput();
+            }
         }
 
         $pagamento = new Pagamento();
@@ -94,7 +112,7 @@ class PagamentoController extends Controller
             'data_emissao_documento' => 'required|date',
             'data_pagamento_efetivo' => 'required|date',
             'numero_cheque' => 'required|string|max:50',
-            'data_vencimento_cheque' => 'required|date',
+            'data_vencimento_cheque' => 'required|date|after_or_equal:data_emissao_documento',
             'valor_total_pagamento' => 'required|numeric|min:0.01',
         ]);
 

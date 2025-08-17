@@ -61,7 +61,7 @@
                                     <x-text-input id="numero_nota_fiscal" class="block mt-1 w-full bg-gray-50 text-sm" type="text" name="numero_nota_fiscal" :value="old('numero_nota_fiscal')" required />
                                 </div>
                                 <div>
-                                    <x-input-label for="data_emissao_documento" value="Data de Emissão (NF)" class="text-xs"/>
+                                    <x-input-label for="data_emissao_documento" value="Data de Pagamento (Nota Fiscal)" class="text-xs"/>
                                     <x-text-input id="data_emissao_documento" class="block mt-1 w-full bg-gray-50 text-sm" type="date" name="data_emissao_documento" :value="old('data_emissao_documento')" required />
                                 </div>
                                 <div>
