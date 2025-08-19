@@ -1,22 +1,27 @@
-<?php 
+<?php
 
 namespace App\Services;
 
 use App\Models\Repasse;
+use Carbon\Carbon;
+use Exception;
 use IntlDateFormatter;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-class DocumentosService{ 
+class DocumentosService
+{
+    private int $currentRow;
 
     private array $cellMap = [
         'header' => [
             'escola_nome' => 'A9',
             'cnpj' => 'X9',
             'parcela' => 'AE18',
-            'exercicio' => 'AH5',
+            'exercicio' => 'AB7',
+            'endereco' => 'A11'
         ],
         'totais' => [
             'custeio_gasto' => 'E19',
@@ -40,118 +45,133 @@ class DocumentosService{
                 'cheque_data' => 'AD',
                 'valor' => 'AF',
             ]
-        ],
-        'footer' => [
-            'data_emissao' => 'A36',
-            'diretor_assinatura' => 'J36',
-            'presidente_assinatura' => 'W36',
         ]
     ];
 
     private Spreadsheet $spreadsheet;
     private Worksheet $sheet;
 
-    public function gerarDemonstrativo(Repasse $repasse)
-    {    
+    /**
+     * @throws Exception
+     */
+    public function gerarDemonstrativo(Repasse $repasse): array
+    {
         $this->carregarModelo();
 
         $this->preencherCabecalho($repasse);
-        $this->preencherPagamentos($repasse->pagamentos()->orderBy('data_emissao_documento', 'asc')->get());
+        $this->preencherPagamentos($repasse->pagamentos()->orderBy('data_emissao_documento')->get());
         $this->preencherTotais($repasse);
         $this->preencherRodape($repasse->escola);
 
         return $this->baixarPlanilha($repasse);
     }
 
-    private function carregarModelo()
+    /**
+     * @throws Exception
+     */
+    private function carregarModelo(): void
     {
         $templateFile = storage_path('app/templates/modelo_demonstrativo.xls');
 
-        if (!file($templateFile)) {
-            throw new \Exception('ERRO: Template não encontrado em storage/app/templates!');
+        if (!file_exists($templateFile)) {
+            throw new Exception('ERRO: Template não encontrado em storage/app/templates!');
         }
-    
+
         $reader = new Xls();
         $this->spreadsheet = $reader->load($templateFile);
         $this->sheet = $this->spreadsheet->getActiveSheet();
     }
 
-    private function preencherCabecalho(Repasse $repasse)
+    private function preencherCabecalho(Repasse $repasse): void
     {
         $escola = $repasse->escola;
-        $this->sheet->setCellValue($this->cellMap['header']['escola_nome'], "CONSELHOR ESCOLAR DA {$escola->nome_escola}");
-        $this->sheet->setCellValue($this->cellMap['header']['cnpj'],$escola->cnpj);
-        $this->sheet->setCellValue($this->cellMap['header']['parcela'],$repasse->numero_parcela);
-        $this->sheet->setCellValue($this->cellMap['header']['exercicio'],$repasse->ano_exercicio);
+        $valorRendimento = $repasse->rendimentos;
 
+        $this->sheet->setCellValue($this->cellMap['header']['escola_nome'], "CONSELHOR ESCOLAR DA $escola->nome_escola");
+        $this->sheet->setCellValue($this->cellMap['header']['cnpj'], $escola->cnpj);
+        $this->sheet->setCellValue($this->cellMap['header']['parcela'], $repasse->numero_parcela);
+
+        $this->sheet->setCellValue($this->cellMap['header']['exercicio'], $repasse->ano_exercicio);
+        $this->sheet->mergeCells("AB7:AG7");
+
+        $this->sheet->setCellValue($this->cellMap['header']['endereco'], $escola->logradouro . ', ' . $escola->numero . ' - ' . $escola->bairro);
+        $this->sheet->mergeCells("A11:L11");
+
+        $this->sheet->setCellValue("Q16", $valorRendimento->valor_rendimento);
+        $this->sheet->mergeCells("Q16:U16");
+
+        $this->sheet->setCellValue("AA16", $valorRendimento->valor_rendimento);
+        $this->sheet->mergeCells("AA16:AD16");
+
+        $this->sheet->setCellValue("Q16", $valorRendimento->valor_rendimento);
+        $this->sheet->mergeCells("P19:V19");
     }
 
-    private function preencherPagamentos($pagamentos)
+    private function preencherPagamentos($pagamentos): void
     {
-        $currentRow = $this->cellMap['pagamentos']['start_row'];
+        $this->currentRow = $this->cellMap['pagamentos']['start_row'];
         $columns = $this->cellMap['pagamentos']['columns'];
-    
-        if ($pagamentos->count() > 0) 
-        {
-            $this->sheet->removeRow($currentRow);
+
+        if ($pagamentos->count() > 0) {
+            $this->sheet->removeRow($this->currentRow);
         }
 
-        foreach ($pagamentos as $index => $pagamento)
-        { 
-            $this->sheet->insertNewRowBefore($currentRow, 1);
+        foreach ($pagamentos as $index => $pagamento) {
+            $this->sheet->insertNewRowBefore($this->currentRow);
 
-
-            $this->sheet->setCellValue($columns['item'] . $currentRow, $index + 1);
-            $this->sheet->setCellValue($columns['favorecido'] . $currentRow, $pagamento->nome_fornecedor);
-            $this->sheet->setCellValue($columns['cnpj_cpf'] . $currentRow, $this->formatarCNPJ( $pagamento->cnpj_cpf_fornecedor));
-            $this->sheet->setCellValue($columns['tipo_bem'] . $currentRow, $pagamento->tipo_despesa);
-            $this->sheet->setCellValue($columns['origem'] . $currentRow, "PREFIN");
-            $this->sheet->setCellValue($columns['doc_tipo'] . $currentRow, "NF");
-            $this->sheet->setCellValue($columns['doc_numero'] . $currentRow, $pagamento->numero_nota_fiscal);
-            $this->sheet->setCellValue($columns['doc_data'] . $currentRow, \Carbon\Carbon::parse($pagamento->data_emissao_documento)->format('d/m/Y'));
-            $this->sheet->setCellValue($columns['cheque_numero'] . $currentRow, $pagamento->numero_cheque);
-            $this->sheet->setCellValue($columns['cheque_data'] . $currentRow, \Carbon\Carbon::parse($pagamento->data_pagamento_efetivo)->format('d/m/Y'));
-            $this->sheet->setCellValue($columns['valor'] . $currentRow, $pagamento->valor_total_pagamento);
+            $this->sheet->setCellValue($columns['item'] . $this->currentRow, $index + 1);
+            $this->sheet->setCellValue($columns['favorecido'] . $this->currentRow, $pagamento->nome_fornecedor);
+            $this->sheet->setCellValue($columns['cnpj_cpf'] . $this->currentRow, $this->formatarCNPJ($pagamento->cnpj_cpf_fornecedor));
+            $this->sheet->setCellValue($columns['tipo_bem'] . $this->currentRow, $pagamento->tipo_despesa);
+            $this->sheet->setCellValue($columns['origem'] . $this->currentRow, "PREFIN");
+            $this->sheet->setCellValue($columns['doc_tipo'] . $this->currentRow, "NF");
+            $this->sheet->setCellValue($columns['doc_numero'] . $this->currentRow, $pagamento->numero_nota_fiscal);
+            $this->sheet->setCellValue($columns['doc_data'] . $this->currentRow, Carbon::parse($pagamento->data_emissao_documento)->format('d/m/Y'));
+            $this->sheet->setCellValue($columns['cheque_numero'] . $this->currentRow, $pagamento->numero_cheque);
+            $this->sheet->setCellValue($columns['cheque_data'] . $this->currentRow, Carbon::parse($pagamento->data_pagamento_efetivo)->format('d/m/Y'));
+            $this->sheet->setCellValue($columns['valor'] . $this->currentRow, $pagamento->valor_total_pagamento);
 
             $natureza = in_array($pagamento->tipo_despesa, ['Material de Custeio', 'Prestação de Serviço']) ? 'C' : 'K';
-            $this->sheet->setCellValue($columns['natureza'] . $currentRow, $natureza);
-            
-            $this->sheet->mergeCells("B{$currentRow}:E{$currentRow}"); 
-            $this->sheet->mergeCells("F{$currentRow}:H{$currentRow}");
-            $this->sheet->mergeCells("I{$currentRow}:N{$currentRow}"); 
-            $this->sheet->mergeCells("O{$currentRow}:Q{$currentRow}"); 
-            $this->sheet->mergeCells("R{$currentRow}:T{$currentRow}"); 
-            $this->sheet->mergeCells("W{$currentRow}:X{$currentRow}"); 
-            $this->sheet->mergeCells("Y{$currentRow}:Z{$currentRow}"); 
-            $this->sheet->mergeCells("AA{$currentRow}:AC{$currentRow}");
-            $this->sheet->mergeCells("AD{$currentRow}:AE{$currentRow}");
-            $this->sheet->mergeCells("AF{$currentRow}:AG{$currentRow}");
+            $this->sheet->setCellValue($columns['natureza'] . $this->currentRow, $natureza);
 
-            $currentRow++;
+            $this->sheet->mergeCells("B$this->currentRow:E$this->currentRow");
+            $this->sheet->mergeCells("F$this->currentRow:H$this->currentRow");
+            $this->sheet->mergeCells("I$this->currentRow:N$this->currentRow");
+            $this->sheet->mergeCells("O$this->currentRow:Q$this->currentRow");
+            $this->sheet->mergeCells("R$this->currentRow:T$this->currentRow");
+            $this->sheet->mergeCells("W$this->currentRow:X$this->currentRow");
+            $this->sheet->mergeCells("Y$this->currentRow:Z$this->currentRow");
+            $this->sheet->mergeCells("AA$this->currentRow:AC$this->currentRow");
+            $this->sheet->mergeCells("AD$this->currentRow:AE$this->currentRow");
+            $this->sheet->mergeCells("AF$this->currentRow:AG$this->currentRow");
+
+            $this->currentRow++;
         }
     }
 
-    private function preencherTotais(Repasse $repasse)
+    private function preencherTotais(Repasse $repasse): void
     {
         $this->sheet->setCellValue($this->cellMap['totais']['custeio_gasto'], $repasse->totalGastoCusteio());
         $this->sheet->setCellValue($this->cellMap['totais']['capital_gasto'], $repasse->totalGastoCapital());
         $this->sheet->setCellValue($this->cellMap['totais']['custeio_creditado'], $repasse->valor_custeio);
-        $this->sheet->setCellValue($this->cellMap['totais']['capital_creditado'], $repasse->valor_capital);    
+        $this->sheet->setCellValue($this->cellMap['totais']['capital_creditado'], $repasse->valor_capital);
     }
 
     private function preencherRodape($escola): void
     {
-        $this->sheet->setCellValue($this->cellMap['footer']['diretor_assinatura'], $escola->nome_diretor);
-        $this->sheet->setCellValue($this->cellMap['footer']['presidente_assinatura'], $escola->nome_presidente_conselho);
-        
+        $footerRow = $this->currentRow + 3;
+
+        $this->sheet->setCellValue('J' . $footerRow, $escola->nome_diretor);
+        $this->sheet->setCellValue('W' . $footerRow, $escola->nome_presidente_conselho);
+
         $formatter = new IntlDateFormatter('pt_BR', IntlDateFormatter::LONG, IntlDateFormatter::NONE);
         $dataAtual = $formatter->format(now());
-        $this->sheet->setCellValue($this->cellMap['footer']['data_emissao'], "ARACAJU, {$dataAtual}");
+        $this->sheet->setCellValue('A' . $footerRow, "ARACAJU, $dataAtual");
     }
 
-    private function baixarPlanilha(Repasse $repasse)
-    {   
-        $fileName = "demonstrativo_{$repasse->escola->nome_escola}_{$repasse->ano_exercicio}-{$repasse->numero_parcela}.xlsx";
+    private function baixarPlanilha(Repasse $repasse): array
+    {
+        $fileName = "demonstrativo_{$repasse->escola->nome_escola}_$repasse->ano_exercicio-$repasse->numero_parcela.xlsx";
         $writer = new Xlsx($this->spreadsheet);
 
         ob_start();
@@ -162,7 +182,11 @@ class DocumentosService{
         return ['fileName' => $fileName, 'content' => $fileContent];
     }
 
-    private function formatarCNPJ($cnpj){
+    private function formatarCNPJ($cnpj): array|string|null
+    {
+        if (empty($cnpj)) {
+            return '';
+        }
         return preg_replace("/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/", "\$1.\$2.\$3/\$4-\$5", $cnpj);
     }
 }

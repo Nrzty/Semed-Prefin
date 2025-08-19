@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Pagamento extends Model
 {
+
+    use HasFactory;
     protected $fillable = [
         'nome_fornecedor',
         'cnpj_cpf_fornecedor',

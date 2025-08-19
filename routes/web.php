@@ -16,7 +16,7 @@ Route::get('/dashboard', [RedirectAuthenticatedUsersController::class, 'home'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
 // ROTAS DO GESTOR
-Route::middleware(['auth'])->prefix('gestor')->name('gestor.')->group(function (){ 
+Route::middleware(['auth'])->prefix('gestor')->name('gestor.')->group(function (){
     Route::get('/dashboard', [GestorDashboardController::class,'index'])->name('dashboard');
 
     Route::resource('pagamentos', PagamentoController::class);
@@ -26,7 +26,7 @@ Route::middleware(['auth'])->prefix('gestor')->name('gestor.')->group(function (
     Route::get('repasses/{repasse}/demonstrativo', [DocumentoController::class, 'gerarDemonstrativo'])->name('repasses.demonstrativo');
 });
 
-// ROTAS DO ADMINISTRADOR
+// ROTAS DO ADMINISTRADORa
 Route::middleware('auth')->group(function (){
     Route::get('/admin/dashboard', function(){
         return 'Painel do Administrador';

@@ -2,17 +2,24 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Repasse extends Model
 {
-        
+
+    use HasFactory;
+
     public function escola(){
         return $this->belongsTo(Escola::class);
     }
 
     public function pagamentos(){
         return $this->hasMany(Pagamento::class);
+    }
+
+    public function rendimentos(){
+        return $this->hasOne(Rendimento::class);
     }
 
     public function totalGastoCusteio(){
