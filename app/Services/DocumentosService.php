@@ -21,7 +21,11 @@ class DocumentosService
             'cnpj' => 'X9',
             'parcela' => 'AE18',
             'exercicio' => 'AB7',
-            'endereco' => 'A11'
+            'endereco' => 'A11',
+            'periodo_execucao' => 'Z18',
+            'valor_rendimento_1' => 'Q16',
+            'valor_rendimento_2' => 'AA16',
+            'valor_rendimento_3' => 'P19',
         ],
         'totais' => [
             'custeio_gasto' => 'E19',
@@ -85,26 +89,29 @@ class DocumentosService
     private function preencherCabecalho(Repasse $repasse): void
     {
         $escola = $repasse->escola;
-        $valorRendimento = $repasse->rendimentos;
 
-        $this->sheet->setCellValue($this->cellMap['header']['escola_nome'], "CONSELHOR ESCOLAR DA $escola->nome_escola");
+        $valorRendimento = $repasse->rendimento->valor_rendimento ?? 0.00;
+
+        $this->sheet->setCellValue($this->cellMap['header']['escola_nome'], "CONSELHOR ESCOLAR DA {$escola->nome_escola}");
         $this->sheet->setCellValue($this->cellMap['header']['cnpj'], $escola->cnpj);
         $this->sheet->setCellValue($this->cellMap['header']['parcela'], $repasse->numero_parcela);
-
         $this->sheet->setCellValue($this->cellMap['header']['exercicio'], $repasse->ano_exercicio);
+        $this->sheet->setCellValue($this->cellMap['header']['endereco'], "{$escola->logradouro}, {$escola->numero} - {$escola->bairro}");
+
+        $this->sheet->setCellValue($this->cellMap['header']['valor_rendimento_1'], $valorRendimento);
+        $this->sheet->setCellValue($this->cellMap['header']['valor_rendimento_2'], $valorRendimento);
+        $this->sheet->setCellValue($this->cellMap['header']['valor_rendimento_3'], $valorRendimento);
+
+        $inicio = $repasse->inicio_execucao->format('d/m/Y');
+        $fim = $repasse->fim_execucao->format('d/m/Y');
+        $this->sheet->setCellValue($this->cellMap['header']['periodo_execucao'], "{$inicio} a {$fim}");
+
         $this->sheet->mergeCells("AB7:AG7");
-
-        $this->sheet->setCellValue($this->cellMap['header']['endereco'], $escola->logradouro . ', ' . $escola->numero . ' - ' . $escola->bairro);
         $this->sheet->mergeCells("A11:L11");
-
-        $this->sheet->setCellValue("Q16", $valorRendimento->valor_rendimento);
         $this->sheet->mergeCells("Q16:U16");
-
-        $this->sheet->setCellValue("AA16", $valorRendimento->valor_rendimento);
         $this->sheet->mergeCells("AA16:AD16");
-
-        $this->sheet->setCellValue("Q16", $valorRendimento->valor_rendimento);
         $this->sheet->mergeCells("P19:V19");
+        $this->sheet->mergeCells("Z18:AD19");
     }
 
     private function preencherPagamentos($pagamentos): void
@@ -117,7 +124,7 @@ class DocumentosService
         }
 
         foreach ($pagamentos as $index => $pagamento) {
-            $this->sheet->insertNewRowBefore($this->currentRow);
+            $this->sheet->insertNewRowBefore($this->currentRow, 1); // Corrigido
 
             $this->sheet->setCellValue($columns['item'] . $this->currentRow, $index + 1);
             $this->sheet->setCellValue($columns['favorecido'] . $this->currentRow, $pagamento->nome_fornecedor);
@@ -134,16 +141,16 @@ class DocumentosService
             $natureza = in_array($pagamento->tipo_despesa, ['Material de Custeio', 'Prestação de Serviço']) ? 'C' : 'K';
             $this->sheet->setCellValue($columns['natureza'] . $this->currentRow, $natureza);
 
-            $this->sheet->mergeCells("B$this->currentRow:E$this->currentRow");
-            $this->sheet->mergeCells("F$this->currentRow:H$this->currentRow");
-            $this->sheet->mergeCells("I$this->currentRow:N$this->currentRow");
-            $this->sheet->mergeCells("O$this->currentRow:Q$this->currentRow");
-            $this->sheet->mergeCells("R$this->currentRow:T$this->currentRow");
-            $this->sheet->mergeCells("W$this->currentRow:X$this->currentRow");
-            $this->sheet->mergeCells("Y$this->currentRow:Z$this->currentRow");
-            $this->sheet->mergeCells("AA$this->currentRow:AC$this->currentRow");
-            $this->sheet->mergeCells("AD$this->currentRow:AE$this->currentRow");
-            $this->sheet->mergeCells("AF$this->currentRow:AG$this->currentRow");
+            $this->sheet->mergeCells("B{$this->currentRow}:E{$this->currentRow}");
+            $this->sheet->mergeCells("F{$this->currentRow}:H{$this->currentRow}");
+            $this->sheet->mergeCells("I{$this->currentRow}:N{$this->currentRow}");
+            $this->sheet->mergeCells("O{$this->currentRow}:Q{$this->currentRow}");
+            $this->sheet->mergeCells("R{$this->currentRow}:T{$this->currentRow}");
+            $this->sheet->mergeCells("W{$this->currentRow}:X{$this->currentRow}");
+            $this->sheet->mergeCells("Y{$this->currentRow}:Z{$this->currentRow}");
+            $this->sheet->mergeCells("AA{$this->currentRow}:AC{$this->currentRow}");
+            $this->sheet->mergeCells("AD{$this->currentRow}:AE{$this->currentRow}");
+            $this->sheet->mergeCells("AF{$this->currentRow}:AG{$this->currentRow}");
 
             $this->currentRow++;
         }
@@ -166,12 +173,12 @@ class DocumentosService
 
         $formatter = new IntlDateFormatter('pt_BR', IntlDateFormatter::LONG, IntlDateFormatter::NONE);
         $dataAtual = $formatter->format(now());
-        $this->sheet->setCellValue('A' . $footerRow, "ARACAJU, $dataAtual");
+        $this->sheet->setCellValue('A' . $footerRow, "ARACAJU, {$dataAtual}");
     }
 
     private function baixarPlanilha(Repasse $repasse): array
     {
-        $fileName = "demonstrativo_{$repasse->escola->nome_escola}_$repasse->ano_exercicio-$repasse->numero_parcela.xlsx";
+        $fileName = "demonstrativo_{$repasse->escola->nome_escola}_{$repasse->ano_exercicio}-{$repasse->numero_parcela}.xlsx";
         $writer = new Xlsx($this->spreadsheet);
 
         ob_start();

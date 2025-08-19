@@ -10,6 +10,12 @@ class Repasse extends Model
 
     use HasFactory;
 
+    protected $casts = [
+        'data_repasse' => 'date',
+        'inicio_execucao' => 'date',
+        'fim_execucao' => 'date',
+    ];
+
     public function escola(){
         return $this->belongsTo(Escola::class);
     }
