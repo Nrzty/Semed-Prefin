@@ -15,6 +15,10 @@ class DocumentosService
 {
     private int $currentRow;
 
+    private array $planoMap = [
+
+    ];
+
     private array $cellMap = [
         'header' => [
             'escola_nome' => 'A9',
