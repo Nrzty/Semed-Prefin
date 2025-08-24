@@ -28,6 +28,11 @@ class Repasse extends Model
         return $this->hasOne(Rendimento::class);
     }
 
+    public function documentosPrestacaoContas()
+    {
+        return $this->hasMany(PrestacaoContaDocumento::class);
+    }
+
     public function itens()
     {
         return $this->hasManyThrough(ItemPagamento::class, Pagamento::class);
