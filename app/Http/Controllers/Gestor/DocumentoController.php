@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Gestor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Repasse;
-use App\Services\DocumentosService;
+use App\Services\DemonstrativoService;
+use App\Services\PlanoAplicacaoService;
 use Illuminate\Support\Facades\Auth;
 
 class DocumentoController extends Controller
@@ -21,10 +22,22 @@ class DocumentoController extends Controller
         return view('gestor.documentos.index', compact('repasses'));
     }
 
-    public function gerarDemonstrativo(Repasse $repasse, DocumentosService $DocumentosService)
+    public function gerarDemonstrativo(Repasse $repasse, DemonstrativoService $documentosService)
     {
         try {
-            $dadosArquivo = $DocumentosService->gerarDemonstrativo($repasse);
+            $dadosArquivo = $documentosService->gerarDemonstrativo($repasse);
+
+            return response($dadosArquivo['content'])
+                ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                ->header('Content-Disposition', 'attachment; filename="' . $dadosArquivo['fileName'] . '"');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['geral' => $e->getMessage()]);
+        }
+    }
+
+    public function gerarPlanoAplicacao(Repasse $repasse, PlanoAplicacaoService $planoAplicacaoService){
+        try{
+            $dadosArquivo = $planoAplicacaoService->gerarPlanoAplicacao($repasse);
 
             return response($dadosArquivo['content'])
                 ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

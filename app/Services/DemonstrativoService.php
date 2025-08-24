@@ -11,13 +11,11 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-class DocumentosService
+class DemonstrativoService
 {
+    private string $templateLocation = "app/templates/modelo_demonstrativo.xls";
+
     private int $currentRow;
-
-    private array $planoMap = [
-
-    ];
 
     private array $cellMap = [
         'header' => [
@@ -64,7 +62,7 @@ class DocumentosService
      */
     public function gerarDemonstrativo(Repasse $repasse): array
     {
-        $this->carregarModelo();
+        $this->carregarModelo($this->templateLocation);
 
         $this->preencherCabecalho($repasse);
         $this->preencherPagamentos($repasse->pagamentos()->orderBy('data_emissao_documento')->get());
@@ -77,9 +75,9 @@ class DocumentosService
     /**
      * @throws Exception
      */
-    private function carregarModelo(): void
+    private function carregarModelo($templateFile): void
     {
-        $templateFile = storage_path('app/templates/modelo_demonstrativo.xls');
+        $templateFile = storage_path($templateFile);
 
         if (!file_exists($templateFile)) {
             throw new Exception('ERRO: Template não encontrado em storage/app/templates!');
@@ -96,7 +94,7 @@ class DocumentosService
 
         $valorRendimento = $repasse->rendimento->valor_rendimento ?? 0.00;
 
-        $this->sheet->setCellValue($this->cellMap['header']['escola_nome'], "CONSELHOR ESCOLAR DA {$escola->nome_escola}");
+        $this->sheet->setCellValue($this->cellMap['header']['escola_nome'], "CONSELHO ESCOLAR DA {$escola->nome_escola}");
         $this->sheet->setCellValue($this->cellMap['header']['cnpj'], $escola->cnpj);
         $this->sheet->setCellValue($this->cellMap['header']['parcela'], $repasse->numero_parcela);
         $this->sheet->setCellValue($this->cellMap['header']['exercicio'], $repasse->ano_exercicio);
@@ -128,7 +126,7 @@ class DocumentosService
         }
 
         foreach ($pagamentos as $index => $pagamento) {
-            $this->sheet->insertNewRowBefore($this->currentRow, 1); // Corrigido
+            $this->sheet->insertNewRowBefore($this->currentRow, 1);
 
             $this->sheet->setCellValue($columns['item'] . $this->currentRow, $index + 1);
             $this->sheet->setCellValue($columns['favorecido'] . $this->currentRow, $pagamento->nome_fornecedor);

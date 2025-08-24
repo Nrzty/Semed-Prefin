@@ -28,6 +28,11 @@ class Repasse extends Model
         return $this->hasOne(Rendimento::class);
     }
 
+    public function itens()
+    {
+        return $this->hasManyThrough(ItemPagamento::class, Pagamento::class);
+    }
+
     public function totalGastoCusteio(){
         return $this->pagamentos()
                     ->whereIn('tipo_despesa', ['Material de Custeio', 'Prestação de Serviço'])

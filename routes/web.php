@@ -24,6 +24,7 @@ Route::middleware(['auth'])->prefix('gestor')->name('gestor.')->group(function (
     // ROTA PRA GERAR OS DOCUMENTOS
     Route::get('documentos', [DocumentoController::class, 'index'])->name('documentos.index');
     Route::get('repasses/{repasse}/demonstrativo', [DocumentoController::class, 'gerarDemonstrativo'])->name('repasses.demonstrativo');
+    Route::get('repasses/{repasse}/planoAplicacao', [DocumentoController::class, 'gerarPlanoAplicacao'])->name('repasses.plano');
 });
 
 // ROTAS DO ADMINISTRADORa
