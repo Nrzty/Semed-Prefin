@@ -8,14 +8,13 @@ use Illuminate\Support\Facades\Auth;
 
 class RedirectAuthenticatedUsersController extends Controller
 {
-    
     public function home (){
-    
-        $user = Auth::user();   
-    
+
+        $user = Auth::user();
+
         if ($user->role === 'admin') {
             return redirect()->route('admin.dashboard');
-        
+
         } elseif ($user->role === 'gestor'){
             return redirect()->route('gestor.dashboard');
         }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Gestor\DocumentoController;
 use App\Http\Controllers\Gestor\PagamentoController;
 use App\Http\Controllers\Gestor\PrestacaoContasController;
@@ -35,11 +35,9 @@ Route::middleware(['auth'])->prefix('gestor')->name('gestor.')->group(function (
     Route::get('repasses/{repasse}/prestacao-contas/consolidar', [PrestacaoContasController::class, 'consolidarDocumentos'])->name('repasses.prestacao-contas.consolidar');
 });
 
-// ROTAS DO ADMINISTRADORa
+// ROTAS DO ADMINISTRADOR
 Route::middleware('auth')->group(function (){
-    Route::get('/admin/dashboard', function(){
-        return 'Painel do Administrador';
-    })->name('admin.dashboard');
+    Route::get('admin/dashboard', [AdminDashboardController::class,'index'])->name('admin.dashboard');
 });
 
 // BREEZE

@@ -23,7 +23,6 @@
                                 </p>
                             </div>
                         <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {{-- Card Saldo Custeio --}}
                             <div class="bg-blue-100 p-4 rounded-lg">
                                 <h4 class="font-bold text-blue-800">Saldo de Custeio</h4>
                                 <p class="text-2xl font-semibold text-blue-900">
