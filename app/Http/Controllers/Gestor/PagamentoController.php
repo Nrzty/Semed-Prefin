@@ -16,7 +16,7 @@ class PagamentoController extends Controller
     {
         $escola = Auth::user()->escola;
 
-        $repassesId = $escola->repasses->pluck("id");
+        $repassesId = $escola->repasses->pluck('id');
         $pagamentos = Pagamento::whereIn('repasse_id', $repassesId)->orderBy('data_pagamento_efetivo', 'desc')->paginate(15);
 
         return view('gestor.pagamentos.index', compact('pagamentos'));
@@ -52,7 +52,7 @@ class PagamentoController extends Controller
 
         $repasseAtivo = $escola->repasses()->where('status', 'Aberto')->latest()->first();
 
-        if (!$repasseAtivo){
+        if (! $repasseAtivo) {
             return redirect()->back()->withErrors(['geral' => 'Não há um repasse ativo para lançar este pagamento.']);
         }
 
@@ -61,26 +61,26 @@ class PagamentoController extends Controller
 
         if (in_array($tipoDespesa, ['Material de Custeio', 'Prestação de Serviço'])) {
             $saldoDisponivel = $repasseAtivo->valor_custeio - $repasseAtivo->totalGastoCusteio();
-        
+
             if ($novoValor > $saldoDisponivel) {
-                return redirect()->back()->withErrors(['valor_total_pagamento' => 'O valor do pagamento excede o saldo de Custeio disponível (R$ ' . number_format($saldoDisponivel, 2, ',', '.') . ').'])->withInput();
+                return redirect()->back()->withErrors(['valor_total_pagamento' => 'O valor do pagamento excede o saldo de Custeio disponível (R$ '.number_format($saldoDisponivel, 2, ',', '.').').'])->withInput();
             }
-        
+
         } else { // Material de Capital
             $saldoDisponivel = $repasseAtivo->valor_capital - $repasseAtivo->totalGastoCapital();
-        
+
             if ($novoValor > $saldoDisponivel) {
-                return redirect()->back()->withErrors(['valor_total_pagamento' => 'O valor do pagamento excede o saldo de Capital disponível (R$ ' . number_format($saldoDisponivel, 2, ',', '.') . ').'])->withInput();
+                return redirect()->back()->withErrors(['valor_total_pagamento' => 'O valor do pagamento excede o saldo de Capital disponível (R$ '.number_format($saldoDisponivel, 2, ',', '.').').'])->withInput();
             }
         }
 
-        $pagamento = new Pagamento();
+        $pagamento = new Pagamento;
 
         $pagamento->fill($validatedData);
         $pagamento->repasse_id = $repasseAtivo->id;
         $pagamento->save();
 
-        return redirect()->route('gestor.dashboard')->with('success','Pagamento cadastrado com sucesso!');
+        return redirect()->route('gestor.dashboard')->with('success', 'Pagamento cadastrado com sucesso!');
     }
 
     /**
@@ -117,16 +117,17 @@ class PagamentoController extends Controller
         ]);
 
         $pagamento->update($validatedData);
-        return redirect()->route('gestor.dashboard')->with('success','Pagamento atualizado com sucesso!');
+
+        return redirect()->route('gestor.dashboard')->with('success', 'Pagamento atualizado com sucesso!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Pagamento $pagamento)
-    {   
+    {
         $pagamento->delete();
 
-        return redirect()->route('gestor.pagamentos.index')->with('success','Pagamento excluido com sucesso!');
+        return redirect()->route('gestor.pagamentos.index')->with('success', 'Pagamento excluido com sucesso!');
     }
 }

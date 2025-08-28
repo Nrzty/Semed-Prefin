@@ -1,50 +1,90 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminDashboardController;
+    use App\Http\Controllers\Admin\AdminAnalisarPlanos;
+    use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\PlanoAnaliseController;
 use App\Http\Controllers\Gestor\DocumentoController;
+use App\Http\Controllers\Gestor\GestorDashboardController;
 use App\Http\Controllers\Gestor\PagamentoController;
+use App\Http\Controllers\Gestor\PlanoAplicacaoController;
 use App\Http\Controllers\Gestor\PrestacaoContasController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RedirectAuthenticatedUsersController;
-use App\Http\Controllers\GestorDashboardController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+/*
+|--------------------------------------------------------------------------
+| Rotas Públicas
+|--------------------------------------------------------------------------
+*/
+Route::get('/', fn () => view('welcome'));
 
-Route::get('/dashboard', [RedirectAuthenticatedUsersController::class, 'home'])
-    ->middleware(['auth', 'verified'])->name('dashboard');
+/*
+|--------------------------------------------------------------------------
+| Rotas Autenticadas
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified'])->group(function () {
 
-// ROTAS DO GESTOR
-Route::middleware(['auth'])->prefix('gestor')->name('gestor.')->group(function (){
-    Route::get('/dashboard', [GestorDashboardController::class,'index'])->name('dashboard');
+    // Rota de redirecionamento pós-login
+    Route::get('/dashboard', [RedirectAuthenticatedUsersController::class, 'home'])->name('dashboard');
 
-    Route::resource('pagamentos', PagamentoController::class);
+    // -----------------------------------
+    // ROTAS DO GESTOR
+    // -----------------------------------
+    Route::prefix('gestor')->name('gestor.')->group(function () {
+        Route::get('/dashboard', [GestorDashboardController::class, 'index'])->name('dashboard');
 
-    // ROTA PRA GERAR OS DOCUMENTOS
-    Route::get('documentos', [DocumentoController::class, 'index'])->name('documentos.index');
-    Route::get('repasses/{repasse}/demonstrativo', [DocumentoController::class, 'gerarDemonstrativo'])->name('repasses.demonstrativo');
-    Route::get('repasses/{repasse}/planoAplicacao', [DocumentoController::class, 'gerarPlanoAplicacao'])->name('repasses.plano');
+        // Rotas de Pagamentos
+        Route::resource('pagamentos', PagamentoController::class);
 
-    // ROTA PARA PRESTAÇÃO DE CONTAS
-    Route::get('prestacao-contas', [PrestacaoContasController::class, 'escolherRepasse'])->name('prestacao-contas.escolher-repasse');
-    Route::get('repasses/{repasse}/prestacao-contas', [PrestacaoContasController::class, 'index'])->name('repasses.prestacao-contas.index');
-    Route::post('repasses/{repasse}/prestacao-contas', [PrestacaoContasController::class, 'upload'])->name('repasses.prestacao-contas.upload');
-    Route::post('repasses/{repasse}/pagamentos/{pagamento}/prestacao-contas', [PrestacaoContasController::class, 'uploadKitDespesa'])->name('repasses.prestacao-contas.upload-kit');
-    Route::get('repasses/{repasse}/prestacao-contas/consolidar', [PrestacaoContasController::class, 'consolidarDocumentos'])->name('repasses.prestacao-contas.consolidar');
-});
+        // Rotas para Geração de Documentos
+        Route::controller(DocumentoController::class)->group(function () {
+            Route::get('documentos', 'index')->name('documentos.index');
+            Route::get('repasses/{repasse}/demonstrativo', 'gerarDemonstrativo')->name('repasses.demonstrativo');
+            Route::get('repasses/{repasse}/planoAplicacao', 'gerarPlanoAplicacao')->name('repasses.plano');
+        });
 
-// ROTAS DO ADMINISTRADOR
-Route::middleware('auth')->group(function (){
-    Route::get('admin/dashboard', [AdminDashboardController::class,'index'])->name('admin.dashboard');
-});
+        // Rotas para Plano de Aplicação
+        Route::resource('plano-aplicacao', PlanoAplicacaoController::class)->only(['create', 'store']);
 
-// BREEZE
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        // Rotas para Prestação de Contas
+        Route::controller(PrestacaoContasController::class)->name('repasses.prestacao-contas.')->prefix('repasses/{repasse}/prestacao-contas')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'upload')->name('upload');
+            Route::post('/pagamentos/{pagamento}', 'uploadKitDespesa')->name('upload-kit');
+            Route::get('/consolidar', 'consolidarDocumentos')->name('consolidar');
+        });
+        Route::get('prestacao-contas/escolher-repasse', [PrestacaoContasController::class, 'escolherRepasse'])->name('prestacao-contas.escolher-repasse');
+    });
+
+    // -----------------------------------
+    // ROTAS DO ADMINISTRADOR
+    // -----------------------------------
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        Route::prefix('planos')->name('planos.')->controller(AdminAnalisarPlanos::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{plano}', 'show')->name('show');
+            // Futuras rotas de aprovação/reprovação poderiam vir aqui
+            // Route::post('/{plano}/aprovar', 'aprovar')->name('aprovar');
+            // Route::post('/{plano}/reprovar', 'reprovar')->name('reprovar');
+        });
+
+        // A rota abaixo se tornou redundante após a correção que fizemos.
+        // O grupo acima ('admin/planos') já a substitui.
+        // Route::get('analisarPlanos', [AdminAnalisarPlanos::class, 'index'])->name('analisarPlanos');
+    });
+
+    // -----------------------------------
+    // ROTAS DE PERFIL (PROFILE)
+    // -----------------------------------
+    Route::controller(ProfileController::class)->prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', 'edit')->name('edit');
+        Route::patch('/', 'update')->name('update');
+        Route::delete('/', 'destroy')->name('destroy');
+    });
 });
 
 require __DIR__.'/auth.php';

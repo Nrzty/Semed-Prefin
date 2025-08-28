@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             },
                             formatter: (value, context) => {
                                 if (totalVerbas === 0) return '0%';
-                                // Agora o cálculo da percentagem funcionará corretamente.
                                 const percentage = (value / totalVerbas * 100).toFixed(1) + '%';
                                 return percentage;
                             }
