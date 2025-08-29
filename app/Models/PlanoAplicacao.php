@@ -18,7 +18,7 @@ class PlanoAplicacao extends Model
         'motivo_reprovacao',
     ];
 
-    public function escolar()
+    public function escola()
     {
         return $this->belongsTo(Escola::class);
     }

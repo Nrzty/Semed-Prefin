@@ -1,19 +1,23 @@
-function planoAplicacaoForm() {
-    return {
+document.addEventListener('alpine:init', () => {
+    Alpine.data('planoAplicacaoForm', (initialData = {}) => ({
         novoItem: {
             descricao: '',
             categoria_despesa: 'Custeio',
-            unidade: 'UND',
+            unidade: 'Un',
             quantidade: 1,
-            valor_unitario: 0
+            valor_unitario: 0,
         },
-        itens: [],
+        itens: initialData.itens || [],
 
         get totalCusteio() {
-            return this.itens.filter(i => i.categoria_despesa === 'Custeio').reduce((total, item) => total + (item.quantidade * item.valor_unitario), 0);
+            return this.itens
+                .filter(item => item.categoria_despesa === 'Custeio')
+                .reduce((total, item) => total + (item.quantidade * item.valor_unitario), 0);
         },
         get totalCapital() {
-            return this.itens.filter(i => i.categoria_despesa === 'Capital').reduce((total, item) => total + (item.quantidade * item.valor_unitario), 0);
+            return this.itens
+                .filter(item => item.categoria_despesa === 'Capital')
+                .reduce((total, item) => total + (item.quantidade * item.valor_unitario), 0);
         },
         get totalGeral() {
             return this.totalCusteio + this.totalCapital;
@@ -21,32 +25,33 @@ function planoAplicacaoForm() {
 
         adicionarItem() {
             if (!this.novoItem.descricao.trim() || this.novoItem.quantidade <= 0 || this.novoItem.valor_unitario <= 0) {
-                alert('Por favor, preencha todos os campos do item corretamente.');
+                alert('Por favor, preencha a descrição, quantidade e valor do item corretamente.');
                 return;
             }
             this.itens.push({ ...this.novoItem });
-            this.resetNovoItem();
+            this.resetarNovoItem();
         },
 
         removerItem(index) {
             this.itens.splice(index, 1);
         },
 
-        resetNovoItem() {
+        resetarNovoItem() {
             this.novoItem.descricao = '';
+            this.novoItem.categoria_despesa = 'Custeio';
             this.novoItem.quantidade = 1;
             this.novoItem.valor_unitario = 0;
-            document.getElementById('descricao').focus();
+
+            this.$nextTick(() => {
+                document.getElementById('descricao').focus();
+            });
         },
 
         submitForm(event) {
-            if (this.itens.length === 0) {
-                alert('Adicione pelo menos um item ao plano antes de submeter.');
-                return;
-            }
-            event.target.submit();
+            const form = event.target;
+            const hiddenInput = form.querySelector('input[name="itens_json"]');
+            hiddenInput.value = JSON.stringify(this.itens);
+            form.submit();
         }
-    }
-}
-
-export default planoAplicacaoForm;
+    }));
+});

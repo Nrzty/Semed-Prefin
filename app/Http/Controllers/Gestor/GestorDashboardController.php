@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Gestor;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
 
 class GestorDashboardController extends Controller
 {
-
-    public function index(){
+    public function index()
+    {
 
         $user = Auth::user();
 
@@ -17,16 +16,16 @@ class GestorDashboardController extends Controller
             [
                 'repasses' => function ($query) {
                     $query->where('status', 'Aberto')->with('pagamentos');
-                }
+                },
             ])->first();
 
-        if (!$escola){
+        if (! $escola) {
             abort(403, 'Usuário não vinculado a uma escola.');
         }
 
         $repasseAtivo = $escola->repasses->sortByDesc('ano_exercicio')
-                                          ->sortByDesc('numero_parcela')
-                                          ->first();                                          
+            ->sortByDesc('numero_parcela')
+            ->first();
 
         $saldoCusteio = 0;
         $saldoCapital = 0;
@@ -34,14 +33,14 @@ class GestorDashboardController extends Controller
         $ultimosPagamentos = collect();
 
         if ($repasseAtivo) {
-            
+
             $totalGastoCusteio = $repasseAtivo->totalGastoCusteio();
             $totalGastoCapital = $repasseAtivo->totalGastoCapital();
 
             $saldoCusteio = $repasseAtivo->valor_custeio - $totalGastoCusteio;
             $saldoCapital = $repasseAtivo->valor_capital - $totalGastoCapital;
-            
-            $ultimosPagamentos = $repasseAtivo->pagamentos->sortByDesc('data_pagamento_efetivo')->take(5); 
+
+            $ultimosPagamentos = $repasseAtivo->pagamentos->sortByDesc('data_pagamento_efetivo')->take(5);
         }
 
         return view('gestor.dashboard', compact([

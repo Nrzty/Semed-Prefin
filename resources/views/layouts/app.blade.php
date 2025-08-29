@@ -18,15 +18,13 @@
         @include('layouts.partials.sidebar')
     @endif
 
-    <div class="flex flex-col flex-1 overflow-y-auto">
-
+    <div class="flex flex-col flex-1 h-screen">
         @include('layouts.partials.header')
 
-        <main class="flex-1 p-6 md:p-8">
+        <main class="flex-1 p-6 md:p-8 overflow-y-auto">
             {{ $slot }}
+            @include('layouts.partials.footer')
         </main>
-
-        @include('layouts.partials.footer')
     </div>
 </div>
 </body>

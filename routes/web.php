@@ -1,6 +1,6 @@
 <?php
 
-    use App\Http\Controllers\Admin\AdminAnalisarPlanos;
+    use App\Http\Controllers\Admin\AdminAnalisarPlanosController;
     use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\PlanoAnaliseController;
 use App\Http\Controllers\Gestor\DocumentoController;
@@ -46,7 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         // Rotas para Plano de Aplicação
-        Route::resource('plano-aplicacao', PlanoAplicacaoController::class)->only(['create', 'store']);
+        Route::resource('plano-aplicacao', PlanoAplicacaoController::class)->except(['destroy']);
 
         // Rotas para Prestação de Contas
         Route::controller(PrestacaoContasController::class)->name('repasses.prestacao-contas.')->prefix('repasses/{repasse}/prestacao-contas')->group(function () {
@@ -64,17 +64,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        Route::prefix('planos')->name('planos.')->controller(AdminAnalisarPlanos::class)->group(function () {
+        Route::prefix('planos')->name('planos.')->controller(AdminAnalisarPlanosController::class)->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/{plano}', 'show')->name('show');
-            // Futuras rotas de aprovação/reprovação poderiam vir aqui
-            // Route::post('/{plano}/aprovar', 'aprovar')->name('aprovar');
-            // Route::post('/{plano}/reprovar', 'reprovar')->name('reprovar');
+            Route::post('/{plano}/aprovar', 'aprovar')->name('aprovar');
+            Route::post('/{plano}/reprovar', 'reprovar')->name('reprovar');
         });
-
-        // A rota abaixo se tornou redundante após a correção que fizemos.
-        // O grupo acima ('admin/planos') já a substitui.
-        // Route::get('analisarPlanos', [AdminAnalisarPlanos::class, 'index'])->name('analisarPlanos');
     });
 
     // -----------------------------------

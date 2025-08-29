@@ -1,12 +1,22 @@
 <x-app-layout>
-    <div x-data="planoAplicacaoForm()">
-        <form action="{{ route('gestor.plano-aplicacao.store') }}" method="POST" @submit.prevent="submitForm">
+    <div x-data="planoAplicacaoForm({ itens: {{ $plano->itens }} })">
+        <form action="{{ route('gestor.plano-aplicacao.update', $plano) }}" method="POST" @submit.prevent="submitForm">
             @csrf
+            @method('PUT')
             <input type="hidden" name="itens_json" :value="JSON.stringify(itens)">
 
             <div class="mb-6">
-                <h1 class="text-2xl font-semibold text-gray-800">Criar Novo Plano de Aplicação</h1>
-                <p class="text-gray-500 mt-1">Adicione os itens e, quando finalizar, submeta o plano para análise.</p>
+                <a href="{{ route('gestor.plano-aplicacao.index') }}" class="flex items-center text-sm text-gray-500 hover:text-indigo-600 mb-2">
+                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    Voltar
+                </a>
+                <h1 class="text-2xl font-semibold text-gray-800">Revisar Plano de Aplicação</h1>
+                <p class="text-gray-500 mt-1">Ajuste os itens necessários e reenvie o plano para uma nova análise.</p>
+            </div>
+
+            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-400 text-red-700">
+                <p class="font-bold">Motivo da Reprovação:</p>
+                <p>{{ $plano->motivo_reprovacao }}</p>
             </div>
 
             <div class="bg-white rounded-lg shadow-md">
@@ -33,7 +43,7 @@
                         </div>
                         <div class="md:col-span-2">
                             <label for="valor_unitario" class="block text-sm font-medium text-gray-700">Valor Unitário (R$)</label>
-                            <input type="number" x-model.number="novoItem.valor_unitario" id="valor_unitario" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0,00">
+                            <input type="number" x-model.number="novoItem.valor_unitario" id="valor_unitario" min="0.01" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0,00">
                         </div>
                     </div>
                     <div class="text-right mt-5">
@@ -47,11 +57,9 @@
 
             <div class="mt-8">
                 <h2 class="text-xl font-semibold text-gray-800">Itens do Plano</h2>
-
                 <div x-show="itens.length === 0" class="mt-4 bg-white rounded-lg shadow-md p-8 text-center">
                     <p class="text-gray-500">Nenhum item adicionado ainda. Preencha o formulário acima para começar.</p>
                 </div>
-
                 <div x-show="itens.length > 0" class="mt-4 space-y-3">
                     <template x-for="(item, index) in itens" :key="index">
                         <div class="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between">
@@ -89,7 +97,7 @@
                     </div>
                     <div class="mt-6">
                         <button type="submit" class="w-full text-center py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors duration-200" :disabled="itens.length === 0">
-                            Submeter Plano para Análise
+                            Atualizar e Reenviar Plano
                         </button>
                     </div>
                 </div>
