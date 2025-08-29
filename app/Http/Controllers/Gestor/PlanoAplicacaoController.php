@@ -68,10 +68,9 @@ class PlanoAplicacaoController extends Controller
                 'motivo_reprovacao' => null,
             ]);
 
-            // Remove os itens antigos
             $plano->itens()->delete();
 
-            foreach ($itens as $item) {
+            foreach (json_decode($request->itens_json, true) as $item) {
                 PlanoAplicacaoItem::create([
                     'plano_aplicacao_id' => $plano->id,
                     'descricao' => $item['descricao'],
@@ -84,14 +83,10 @@ class PlanoAplicacaoController extends Controller
             }
 
             DB::commit();
-
-            return redirect()->route('gestor.plano-aplicacao.index')->with('success', 'Plano atualizado e reenviado para análise com sucesso!');
-
+            return redirect()->route('gestor.plano-aplicacao.index')->with('success', 'Plano atualizado e reenviado com sucesso!');
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Erro ao atualizar plano de aplicação: '.$e->getMessage());
-
-            return back()->with('error', 'Ocorreu um erro ao reenviar o plano. Tente novamente.');
+            return back()->with('error', 'Ocorreu um erro ao reenviar o plano.');
         }
     }
 
@@ -110,34 +105,31 @@ class PlanoAplicacaoController extends Controller
             return back()->withErrors(['geral' => 'É necessário adicionar pelo menos um item ao plano.']);
         }
 
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-
             $plano = PlanoAplicacao::create([
                 'user_id' => Auth::id(),
                 'escola_id' => Auth::user()->escola_id,
                 'status' => 'Em Análise',
             ]);
 
-            foreach ($itens as $itemData) {
-                $plano->itens()->create([
-                    'descricao' => $itemData['descricao'],
-                    'categoria_despesa' => $itemData['categoria_despesa'],
-                    'unidade' => $itemData['unidade'],
-                    'quantidade' => $itemData['quantidade'],
-                    'valor_unitario' => $itemData['valor_unitario'],
+            foreach (json_decode($request->itens_json, true) as $item) {
+                PlanoAplicacaoItem::create([
+                    'plano_aplicacao_id' => $plano->id,
+                    'descricao' => $item['descricao'],
+                    'categoria_despesa' => $item['categoria_despesa'],
+                    'unidade' => $item['unidade'] ?? 'Un',
+                    'quantidade' => $item['quantidade'],
+                    'valor_unitario' => $item['valor_unitario'],
+                    'valor_total' => $item['quantidade'] * $item['valor_unitario'],
                 ]);
-
-                DB::commit();
-
-                return redirect()
-                    ->route('gestor.plano-aplicacao.index')
-                    ->with('success', 'Plano de Aplicação enviado com sucesso! Aguarde a análise do administrador.');
             }
-        } catch (Exception $e) {
-            DB::rollback();
 
-            return back()->withErrors(['geral' => 'Ocorreu um erro ao salvar o plano, confira os detalhes: '.$e->getMessage()]);
+            DB::commit();
+            return redirect()->route('gestor.plano-aplicacao.index')->with('success', 'Plano enviado com sucesso!');
+        } catch (Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Ocorreu um erro ao enviar o plano.');
         }
     }
 }

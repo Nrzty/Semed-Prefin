@@ -1,4 +1,26 @@
 <x-app-layout>
+    @if ($errors->any())
+        <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+            <p class="font-bold">Atenção</p>
+            <ul class="mt-2 list-disc list-inside text-sm">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if(session('success'))
+        <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4" role="alert">
+            <p>{{ session('success') }}</p>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+            <p>{{ session('error') }}</p>
+        </div>
+    @endif
     <div x-data="planoAplicacaoForm()">
         <form action="{{ route('gestor.plano-aplicacao.store') }}" method="POST" @submit.prevent="submitForm">
             @csrf
@@ -47,11 +69,9 @@
 
             <div class="mt-8">
                 <h2 class="text-xl font-semibold text-gray-800">Itens do Plano</h2>
-
                 <div x-show="itens.length === 0" class="mt-4 bg-white rounded-lg shadow-md p-8 text-center">
                     <p class="text-gray-500">Nenhum item adicionado ainda. Preencha o formulário acima para começar.</p>
                 </div>
-
                 <div x-show="itens.length > 0" class="mt-4 space-y-3">
                     <template x-for="(item, index) in itens" :key="index">
                         <div class="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between">
@@ -71,7 +91,6 @@
                         </div>
                     </template>
                 </div>
-
                 <div x-show="itens.length > 0" class="mt-6 bg-white rounded-lg shadow-md p-6">
                     <div class="space-y-3">
                         <div class="flex justify-between font-medium text-gray-600">
@@ -89,7 +108,7 @@
                     </div>
                     <div class="mt-6">
                         <button type="submit" class="w-full text-center py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors duration-200" :disabled="itens.length === 0">
-                            Submeter Plano para Análise
+                            Enviar Plano para Análise
                         </button>
                     </div>
                 </div>

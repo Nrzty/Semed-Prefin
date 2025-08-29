@@ -23,12 +23,10 @@ class AdminAnalisarPlanosController extends Controller
         $plano->load(['escola', 'user', 'itens']);
 
         $totalCusteio = $plano->itens->where('categoria_despesa', 'Custeio')->sum('valor_total');
-
         $totalCapital = $plano->itens->where('categoria_despesa', 'Capital')->sum('valor_total');
-
         $totalGeral = $plano->itens->sum('valor_total');
 
-        return view('admin.analisar-planos.show', data: compact(
+        return view('admin.analisar-planos.show', compact(
             'plano',
             'totalCusteio',
             'totalCapital',

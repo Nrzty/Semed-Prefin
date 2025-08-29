@@ -16,17 +16,11 @@ class PlanoAplicacaoItem extends Model
         'unidade',
         'quantidade',
         'valor_unitario',
+        'valor_total',
     ];
 
     public function planoAplicacao()
     {
         return $this->belongsTo(PlanoAplicacao::class);
-    }
-
-    protected function valorTotal(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => $this->quantidade * $this->valor_unitario,
-        );
     }
 }

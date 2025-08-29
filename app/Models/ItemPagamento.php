@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ItemPagamento extends Model
 {
-
     protected $table = 'itens_pagamentos';
 
     protected $fillable = [
@@ -28,7 +27,7 @@ class ItemPagamento extends Model
     protected function valorTotal(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->quantidade * $this->valor_unitario
+            get: fn () => $this->quantidade * $this->valor_unitario
         );
     }
 }

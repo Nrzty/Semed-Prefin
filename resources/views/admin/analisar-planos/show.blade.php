@@ -1,14 +1,4 @@
 <x-app-layout>
-    @if ($errors->any())
-        <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
-            <p class="font-bold">Atenção</p>
-            <ul class="mt-2 list-disc list-inside text-sm">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
     <div class="mb-6">
         <a href="{{ route('admin.planos.index') }}" class="flex items-center text-sm text-gray-500 hover:text-indigo-600 mb-2">
             <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>

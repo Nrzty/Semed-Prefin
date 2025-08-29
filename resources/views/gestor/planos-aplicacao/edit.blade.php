@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div x-data="planoAplicacaoForm({ itens: {{ $plano->itens }} })">
+    <div x-data="planoAplicacaoForm({ itens: {{ json_encode($plano->itens) }} })">
         <form action="{{ route('gestor.plano-aplicacao.update', $plano) }}" method="POST" @submit.prevent="submitForm">
             @csrf
             @method('PUT')
@@ -21,8 +21,8 @@
 
             <div class="bg-white rounded-lg shadow-md">
                 <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-800">Adicionar Item</h3>
-                    <p class="text-sm text-gray-500 mt-1">Preencha os detalhes do bem ou serviço a ser adquirido.</p>
+                    <h3 class="text-lg font-semibold text-gray-800">Adicionar/Alterar Item</h3>
+                    <p class="text-sm text-gray-500 mt-1">Preencha os detalhes e adicione à lista abaixo.</p>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
@@ -58,7 +58,7 @@
             <div class="mt-8">
                 <h2 class="text-xl font-semibold text-gray-800">Itens do Plano</h2>
                 <div x-show="itens.length === 0" class="mt-4 bg-white rounded-lg shadow-md p-8 text-center">
-                    <p class="text-gray-500">Nenhum item adicionado ainda. Preencha o formulário acima para começar.</p>
+                    <p class="text-gray-500">Nenhum item adicionado ainda.</p>
                 </div>
                 <div x-show="itens.length > 0" class="mt-4 space-y-3">
                     <template x-for="(item, index) in itens" :key="index">
@@ -67,7 +67,7 @@
                                 <span class="text-indigo-600 font-bold mr-4" x-text="`${index + 1}.`"></span>
                                 <div>
                                     <p class="font-semibold text-gray-900" x-text="item.descricao"></p>
-                                    <p class="text-sm text-gray-600" x-text="`${item.quantidade} x R$ ${item.valor_unitario.toFixed(2).replace('.', ',')} (${item.categoria_despesa})`"></p>
+                                    <p class="text-sm text-gray-600" x-text="`${item.quantidade} x R$ ${parseFloat(item.valor_unitario).toFixed(2).replace('.', ',')} (${item.categoria_despesa})`"></p>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-4">
@@ -79,7 +79,6 @@
                         </div>
                     </template>
                 </div>
-
                 <div x-show="itens.length > 0" class="mt-6 bg-white rounded-lg shadow-md p-6">
                     <div class="space-y-3">
                         <div class="flex justify-between font-medium text-gray-600">
