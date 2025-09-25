@@ -1,6 +1,8 @@
 <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
     <div class="flex items-center justify-center h-16 border-b">
-        <img src="{{ asset('imgs/logo2.png') }}" alt="Logo SIGED" class="h-8 w-auto">
+        <a href=" {{ route('gestor.dashboard') }} ">
+            <img src="{{ asset('imgs/logo2.png') }}" alt="Logo SIGED" class="h-8 w-auto">
+        </a>
     </div>
 
     <nav class="mt-4 px-2 flex-1">

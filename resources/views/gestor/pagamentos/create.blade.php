@@ -5,10 +5,10 @@
         </h2>
     </x-slot>
 
-    <div> 
+    <div>
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg h-full">
             <div class="p-6 text-gray-900 flex flex-col h-full">
-                
+
                 <div class="mb-6 flex-shrink-0">
                     <h3 class="text-2xl font-bold text-gray-800">Lançar Nova Despesa</h3>
                     <p class="text-gray-500 mt-1">Preencha os campos para registrar uma nova despesa.</p>
@@ -24,10 +24,9 @@
                         </ul>
                     </div>
                 @endif
-
                 <form method="POST" action="{{ route('gestor.pagamentos.store') }}" class="flex-grow flex flex-col justify-between">
                     @csrf
-                    
+
                     <div class="space-y-4">
                         <div class="p-4 border border-gray-200 rounded-lg">
                             <h4 class="text-md font-semibold text-gray-700 mb-4">Informações do Fornecedor</h4>
@@ -93,7 +92,7 @@
                         </x-primary-button>
                     </div>
                 </form>
+                </div>
             </div>
         </div>
-    </div>
 </x-app-layout>

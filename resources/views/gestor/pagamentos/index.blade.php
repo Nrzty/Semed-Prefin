@@ -10,17 +10,15 @@
         </div>
     </x-slot>
 
-    {{-- O x-data inicializa o Alpine.js para esta página --}}
     <div x-data="{ openModal: false, deleteUrl: '' }">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-900">
-                {{-- Exibição de mensagem de status (sucesso) --}}
                 @if (session('status'))
                     <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
                         <span class="block sm:inline">{{ session('status') }}</span>
                     </div>
                 @endif
-                
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white">
                         <thead class="bg-gray-100">
@@ -38,10 +36,10 @@
                                     <td class="py-3 px-4 whitespace-nowrap">{{ $pagamento->nome_fornecedor }}</td>
                                     <td class="py-3 px-4 whitespace-nowrap text-right">R$ {{ number_format($pagamento->valor_total_pagamento, 2, ',', '.') }}</td>
                                     <td class="py-3 px-4 whitespace-nowrap text-center space-x-4">
-                                        <a href="{{ route('gestor.pagamentos.edit', $pagamento->id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                        <a href="{{ route('gestor.pagamentos.edit', $pagamento->id) }}" class="text-indigo-600 bg-indigo-100 font-semibold rounded-lg hover:text-indigo-900 text-sm">
                                             Editar
                                         </a>
-                                        <button @click="openModal = true; deleteUrl = '{{ route('gestor.pagamentos.destroy', $pagamento->id) }}'" class="text-red-600 hover:text-red-900 text-sm font-medium">
+                                        <button @click="openModal = true; deleteUrl = '{{ route('gestor.pagamentos.destroy', $pagamento->id) }}'" class="text-red-600 bg-red-100 font-semibold rounded-lg hover:text-red-900 text-sm">
                                             Excluir
                                         </button>
                                     </td>
@@ -71,7 +69,7 @@
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
              class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            
+
             <div @click.away="openModal = false"
                  x-transition:enter="ease-out duration-300"
                  x-transition:enter-start="opacity-0 scale-90"
@@ -80,7 +78,7 @@
                  x-transition:leave-start="opacity-100 scale-100"
                  x-transition:leave-end="opacity-0 scale-90"
                  class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-                
+
                 <h3 class="text-xl font-bold text-gray-800">Confirmar Exclusão</h3>
                 <p class="mt-2 text-gray-600">
                     Você tem certeza que deseja excluir este pagamento? Esta ação não pode ser desfeita.

@@ -10,7 +10,7 @@
 
     <div class="flex items-center">
         <div x-data="{ dropdownOpen: false }" class="relative">
-            <button @click="dropdownOpen = !dropdownOpen" class="flex items-center justify-between w-48 sm:w-64 p-2 rounded-md hover:bg-gray-100 transition-colors focus:outline-none">
+            <button @click="dropdownOpen = !dropdownOpen" class="flex items-center justify-end w-48  p-2 rounded-md hover:bg-gray-100 transition-colors focus:outline-none">
                 <span class="font-medium text-gray-700 text-sm truncate">
                     @if (Auth::user()->role == 'gestor' && Auth::user()->escola)
                         {{ Auth::user()->escola->nome_escola }}
